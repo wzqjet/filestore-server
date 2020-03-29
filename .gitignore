@@ -1,2 +1,3 @@
 /local-file
 /.idea
+/db/mysql/conn.go
