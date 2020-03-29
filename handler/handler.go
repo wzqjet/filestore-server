@@ -47,17 +47,17 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("Failed to save file, ERR %s", err.Error())
 		}
-		newFile.Seek(0,0)
+		newFile.Seek(0, 0)
 		fileMeta.FileSha1 = util.FileSha1(newFile)
-		meta.UpdateFileMeta(fileMeta)
+		_ = meta.UpdateFileMetaDB(fileMeta)
 		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
 	}
 }
+
 //上传完成
 func UploadSucHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "Upload fin")
 }
-
 
 //
 func FileQueryHandler(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +70,7 @@ func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
 	filehash := r.Form["filehash"][0]
 	fileMeta := meta.GetFileMeta(filehash)
 	data, err := json.Marshal(fileMeta)
-	if err!=nil {
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -79,7 +79,7 @@ func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
 
 func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	filehash:= r.Form.Get("filehash")
+	filehash := r.Form.Get("filehash")
 	fileMeta := meta.GetFileMeta(filehash)
 	f, err := os.Open(fileMeta.Location)
 	if err != nil {
@@ -92,8 +92,8 @@ func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type","application/octect-stream")
-	w.Header().Set("Content-disposition","attachment;filename=\""+fileMeta.FileName+"\"")
+	w.Header().Set("Content-Type", "application/octect-stream")
+	w.Header().Set("Content-disposition", "attachment;filename=\""+fileMeta.FileName+"\"")
 	w.Write(data)
 
 }
@@ -121,6 +121,7 @@ func FileMetaUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 
 }
+
 //删除
 func FileDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
@@ -131,4 +132,3 @@ func FileDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	meta.RemoveFileMeta(fileHash)
 	w.WriteHeader(http.StatusOK)
 }
-
